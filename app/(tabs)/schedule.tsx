@@ -1,14 +1,23 @@
+import BlockCard from '@/components/BlockCard';
+import { getClaimsForDriver } from '@/services/api';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 export default function ScheduleScreen() {
   const [claims, setClaims] = useState([]);
+  const driverId = 1;
 
   useEffect(() => {
-    fetch('https://flex-backend2-production.up.railway.app/claims?driver_id=1') // Replace with actual driver_id
-      .then(response => response.json())
-      .then(data => setClaims(data))
-      .catch(error => console.error('Error fetching claims:', error));
+    const fetchClaims = async () => {
+      try {
+        const data = await getClaimsForDriver(driverId);
+        setClaims(data);
+      } catch (error) {
+        console.error('Error fetching claims:', error);
+      }
+    };
+
+    fetchClaims();
   }, []);
 
   return (
@@ -17,14 +26,7 @@ export default function ScheduleScreen() {
       <FlatList
         data={claims}
         keyExtractor={(item) => item.claim_id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.claim}>
-            <Text>Claim ID: {item.claim_id}</Text>
-            <Text>Block ID: {item.block_id}</Text>
-            <Text>Claim Time: {item.claim_time}</Text>
-            <Text>Status: {item.status}</Text>
-          </View>
-        )}
+        renderItem={({ item }) => <BlockCard block={item} />}
       />
     </View>
   );
@@ -40,11 +42,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-  },
-  claim: {
-    backgroundColor: '#f0f0f0',
-    padding: 15,
-    marginVertical: 8,
-    borderRadius: 10,
   },
 });
